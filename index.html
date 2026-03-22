@@ -6,57 +6,75 @@
     <title>Google Drive - Mis archivos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f3f4f6; font-family: sans-serif; }
-        .hidden { display: none; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background-color: #f3f4f6; }
+        .hidden { display: none !important; }
+        iframe { border: none; width: 100%; height: 100vh; background: black; }
+        .btn-game { @apply bg-gray-800 hover:bg-gray-700 text-white p-4 rounded-lg flex flex-col items-center justify-center transition-all border-b-4 border-gray-600 active:border-b-0; }
     </style>
 </head>
-<body class="flex items-center justify-center h-screen">
+<body class="flex items-center justify-center">
 
-    <div id="calculator" class="bg-white p-8 rounded-lg shadow-xl w-80 border-t-4 border-green-600">
+    <div id="calculator" class="bg-white p-8 rounded-lg shadow-xl w-80 border-t-4 border-green-600 transition-opacity">
         <h2 class="text-2xl font-bold text-green-600 mb-4 text-center">Laboratorio de Química</h2>
-        <p class="text-xs text-gray-500 mb-4 text-center">Calcula el promedio de masa atómica:</p>
-        <input type="number" placeholder="Masa (u)" class="w-full p-2 mb-2 border rounded">
-        <input type="number" placeholder="Abundancia (%)" class="w-full p-2 mb-4 border rounded">
-        <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Procesar</button>
+        <p class="text-xs text-gray-500 mb-4 text-center text-balance">Cálculo de masa atómica promedio por isótopos:</p>
+        <input type="number" placeholder="Masa del Isótopo" class="w-full p-2 mb-2 border rounded">
+        <input type="number" placeholder="Abundancia %" class="w-full p-2 mb-4 border rounded">
+        <button class="w-full bg-green-600 text-white py-2 rounded font-bold">Procesar Datos</button>
     </div>
 
-    <div id="game-menu" class="hidden bg-gray-900 p-8 rounded-xl shadow-2xl text-white text-center w-full max-w-md">
-        <h1 class="text-3xl font-bold mb-6 text-orange-500">Panel Secreto 🦊</h1>
-        <div class="grid grid-cols-1 gap-4">
-            <button onclick="window.location.href='https://www.google.com/search?q=pokemon+emulator+online'" class="bg-blue-600 py-3 rounded-lg font-bold">🎮 Pokémon</button>
-            <button onclick="window.location.href='https://precisionclient.pro/'" class="bg-green-600 py-3 rounded-lg font-bold">⛏️ Minecraft (Eaglercraft)</button>
-            <button onclick="window.location.href='https://supermario-game.com/'" class="bg-red-600 py-3 rounded-lg font-bold">🍄 Super Mario</button>
+    <div id="main-menu" class="hidden bg-gray-900 p-6 rounded-2xl shadow-2xl w-full max-w-2xl text-white">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-black text-orange-500">CENTRAL DE JUEGOS 🦊</h1>
+            <span class="bg-red-600 text-[10px] px-2 py-1 rounded">PRESIONA "Q" PARA SALIR</span>
         </div>
-        <p class="mt-6 text-gray-400 text-sm italic underline">Presiona "Q" para cerrar todo</p>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <button onclick="load('https://www.retrogames.cc/embed/40238-pokemon-edicion-rojo-fuego-spain.html')" class="btn-game"><span>🔴 Pokémon</span><small class="text-[10px] text-gray-400">GBA/Retro</small></button>
+            <button onclick="load('https://games.eaglercraft.com/')" class="btn-game"><span>⛏️ Minecraft</span><small class="text-[10px] text-gray-400">V1.8 Online</small></button>
+            <button onclick="load('https://n-adeel.github.io/super-mario-bros/')" class="btn-game"><span>🍄 Super Mario</span><small class="text-[10px] text-gray-400">Clásico NES</small></button>
+            <button onclick="load('https://www.retrogames.cc/psx-games.html')" class="btn-game"><span>💿 PlayStation 1</span><small class="text-[10px] text-gray-400">Catálogo PSX</small></button>
+            <button onclick="load('https://www.retrogames.cc/nintendo-games.html')" class="btn-game"><span>🎮 Nintendo</span><small class="text-[10px] text-gray-400">NES/SNES/N64</small></button>
+            <button onclick="load('https://vimm.net/?p=emulate')" class="btn-game"><span>🌌 Más Consolas</span><small class="text-[10px] text-gray-400">PS2/3DS/Wii</small></button>
+        </div>
+    </div>
+
+    <div id="game-view" class="hidden w-full h-full">
+        <iframe id="game-frame" src=""></iframe>
     </div>
 
     <script>
-        let inputBuffer = "";
-        const secretCode = "fox"; // TU CÓDIGO SECRETO
+        let buffer = "";
+        const code = "fox";
+        const calc = document.getElementById('calculator');
+        const menu = document.getElementById('main-menu');
+        const view = document.getElementById('game-view');
+        const frame = document.getElementById('game-frame');
 
-        // ESCUCHAR TECLADO
         document.addEventListener('keydown', (e) => {
-            // Cerrar con la tecla Q
+            // BOTÓN DE PÁNICO: Tecla Q
             if (e.key.toLowerCase() === 'q') {
-                document.getElementById('game-menu').classList.add('hidden');
-                document.getElementById('calculator').classList.remove('hidden');
-                inputBuffer = "";
+                view.classList.add('hidden');
+                menu.classList.add('hidden');
+                calc.classList.remove('hidden');
+                frame.src = "";
+                buffer = "";
                 return;
             }
 
-            // Guardar lo que escribes
-            inputBuffer += e.key.toLowerCase();
-            
-            // Si escribes "fox", muestra los juegos
-            if (inputBuffer.includes(secretCode)) {
-                document.getElementById('calculator').classList.add('hidden');
-                document.getElementById('game-menu').classList.remove('hidden');
-                inputBuffer = "";
+            buffer += e.key.toLowerCase();
+            if (buffer.includes(code)) {
+                calc.classList.add('hidden');
+                menu.classList.remove('hidden');
+                buffer = "";
             }
-
-            // Limpiar el buffer si es muy largo
-            if (inputBuffer.length > 10) inputBuffer = "";
+            if (buffer.length > 10) buffer = "";
         });
+
+        function load(url) {
+            menu.classList.add('hidden');
+            view.classList.remove('hidden');
+            frame.src = url;
+        }
     </script>
 </body>
 </html>
